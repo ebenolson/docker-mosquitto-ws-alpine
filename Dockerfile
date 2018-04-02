@@ -1,13 +1,12 @@
-FROM alpine:3.4
+FROM alpine:3.5
 
-MAINTAINER Miguel Luis <mkxpto@gmail.com>
+MAINTAINER Eben Olson <eben.olson@gmail.com>
 
 RUN 	mkdir -p src && \
 	cd src && \
 	apk add --update build-base git openssl-dev c-ares-dev util-linux-dev libwebsockets-dev && \
-	git clone https://github.com/eclipse/mosquitto.git && \
+	git clone https://github.com/ebenolson/mosquitto.git && \
 	cd mosquitto && \
-	git checkout tags/v1.4.9 -b v1.4.9 && \
 	sed -i.bak s/WITH_WEBSOCKETS:=no/WITH_WEBSOCKETS:=yes/g config.mk && \
 	sed -i.bak s/WITH_DOCS:=yes/WITH_DOCS:=no/g config.mk && \
 	make && \
@@ -19,14 +18,12 @@ RUN 	mkdir -p src && \
 	rm -rf src && \
 	rm -rf /tmp/* /var/tmp/* /var/cache/apk/*
 
-RUN mkdir -p /mqtt/config /mqtt/data /mqtt/log
-COPY mqtt/config /mqtt/config
-RUN chown -R mosquitto:mosquitto /mqtt
-VOLUME ["/mqtt/config", "/mqtt/data", "/mqtt/log"]
+RUN mkdir -p /mosquitto/config /mosquitto/data /mosquitto/log
+RUN chown -R mosquitto:mosquitto /mosquitto
 
 EXPOSE 1883 9001
 
 ADD docker-entrypoint.sh /usr/bin/
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["/usr/local/sbin/mosquitto", "-c", "/mqtt/config/mosquitto.conf"]
+CMD ["/usr/local/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf"]
